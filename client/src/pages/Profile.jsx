@@ -11,6 +11,9 @@ import {
   updateUserStart,
   updateUserSuccess,
   updateUserFailure,
+  deleteUserFailure,
+  deleteUserStart,
+  deleteUserSuccess,
 } from "../redux/user/userSlice";
 
 export default function Profile() {
@@ -28,7 +31,7 @@ export default function Profile() {
   // allow write: if
   // request.resource.size < 2 * 1024 * 1024 &&
   // request.resource.contentType.matches('image/.*')
-  console.log(formData);
+
   useEffect(() => {
     if (file) {
       handleFileUpload(file);
@@ -86,6 +89,23 @@ export default function Profile() {
     }
   };
 
+  const handleDeleteUser = async () => {
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(deleteUserFailure(data.message));
+        return;
+      }
+      dispatch(deleteUserSuccess(data));
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message));
+    }
+  };
+
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h1 className="text-3xl font-semibold text-center my-7">Profile</h1>
@@ -106,7 +126,7 @@ export default function Profile() {
         <p className="text-sm self-center">
           {fileUploadError ? (
             <span className="text-red-700">Error image uplaod</span>
-          ) : filePerc >= 0 && filePerc < 100 ? (
+          ) : filePerc > 0 && filePerc < 100 ? (
             <span className="text-green-700">{`Uploading ${filePerc}`}</span>
           ) : filePerc === 100 ? (
             <span className="text-green-700">Image Uploaded successfully</span>
@@ -145,12 +165,19 @@ export default function Profile() {
         </button>
       </form>
       <div className="flex justify-between mt-5">
-        <span className="text-red-700 cursor-pointer">Delete account</span>
+        <span
+          onClick={handleDeleteUser}
+          className="text-red-700 cursor-pointer"
+        >
+          Delete account
+        </span>
         <span className="text-red-700 cursor-pointer">Sign out</span>
       </div>
 
       <p className="text-red-700">{error ? error : ""}</p>
-      <p className="text-green-700 mt-5">{updateSuccess ? 'User is Updated Successfully!' : ""}</p>
+      <p className="text-green-700 mt-5">
+        {updateSuccess ? "User is Updated Successfully!" : ""}
+      </p>
     </div>
   );
 }

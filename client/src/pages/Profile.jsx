@@ -73,7 +73,7 @@ export default function Profile() {
         <p className="text-sm self-center">
           {fileUploadError ? (
             <span className="text-red-700">Error image uplaod</span>
-          ) : filePerc > 0 && filePerc < 100 ? (
+          ) : filePerc >= 0 && filePerc < 100 ? (
             <span className="text-green-700">{`Uploading ${filePerc}`}</span>
           ) : filePerc === 100 ? (
             <span className="text-green-700">Image Uploaded successfully</span>

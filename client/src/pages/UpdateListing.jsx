@@ -37,10 +37,10 @@ export default function UpdateListing() {
     const fetchListing = async () => {
       const listingId = params.listingId;
       const res = await fetch(`/api/listing/get/${listingId}`, {
-        method: "GET"
-      })
+        method: "GET",
+      });
       const data = await res.json();
-      if(data.success === false){
+      if (data.success === false) {
         console.log(data.message);
       }
       setFormData(data);
@@ -300,7 +300,9 @@ export default function UpdateListing() {
 
               <div className="flex flex-col items-center">
                 <p>Regular Price</p>
-                <span className="text-xs">(₹ / month)</span>
+                {formData.type === "rent" && (
+                  <span className="text-xs">(₹ / month)</span>
+                )}
               </div>
 
               {formData.offer && (
@@ -317,7 +319,9 @@ export default function UpdateListing() {
                   />
                   <div className="flex flex-col items-center">
                     <p>Discount Price</p>
-                    <span className="text-xs">(₹ / month)</span>
+                    {formData.type === "rent" && (
+                      <span className="text-xs">(₹ / month)</span>
+                    )}
                   </div>
                 </div>
               )}

@@ -144,7 +144,7 @@ export default function CreateListing() {
       if (data.success === false) {
         setError(data.message);
       }
-      navigate(`/listing/${data._id}`)
+      navigate(`/listing/${data._id}`);
     } catch (error) {
       setError(error.message);
       setLoading(false);
@@ -283,7 +283,9 @@ export default function CreateListing() {
 
               <div className="flex flex-col items-center">
                 <p>Regular Price</p>
-                <span className="text-xs">(₹ / month)</span>
+                {formData.type === "rent" && (
+                  <span className="text-xs">(₹ / month)</span>
+                )}
               </div>
 
               {formData.offer && (
@@ -300,7 +302,9 @@ export default function CreateListing() {
                   />
                   <div className="flex flex-col items-center">
                     <p>Discount Price</p>
-                    <span className="text-xs">(₹ / month)</span>
+                    {formData.type === "rent" && (
+                      <span className="text-xs">(₹ / month)</span>
+                    )}
                   </div>
                 </div>
               )}

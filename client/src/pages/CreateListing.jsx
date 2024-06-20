@@ -128,7 +128,7 @@ export default function CreateListing() {
       if (formData.imageUrls.length < 1)
         return setError("You must upload atleast 1 image!");
 
-      if (formData.regularPrice < formData.discountPrice)
+      if (+formData.regularPrice < +formData.discountPrice)
         return setError("Regular price cannot be lower than Discount Price");
       setLoading(true);
       setError(false);

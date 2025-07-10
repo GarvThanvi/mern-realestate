@@ -1,5 +1,10 @@
 import Listing from "../models/listing.model.js";
 import { errorHandler } from "../utils/error.js";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import dotenv from "dotenv";
+dotenv.config();
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export const createListing = async (req, res, next) => {
   try {
@@ -100,6 +105,40 @@ export const getListings = async (req, res, next) => {
       .skip(startIndex);
 
     return res.status(200).json(listings);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const generateDescription = async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const generationConfig = {
+      temperature: 0.7,
+      maxOutputTokens: 200,
+    };
+    const result = await model.generateContent({
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              text: `
+          Generate a compelling real estate listing description based on these details:
+          - ${prompt}
+          Keep it professional, highlight key features, and make it engaging for potential buyers/renters.
+          Length: 3-5 sentences max.
+        `,
+            },
+          ],
+        },
+      ],
+      generationConfig,
+    });
+
+    const text = result.response.text();
+    res.status(200).json({ description: text });
   } catch (error) {
     next(error);
   }

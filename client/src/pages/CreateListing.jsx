@@ -31,6 +31,29 @@ export default function CreateListing() {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const generateDescription = async () => {
+    if (!aiPrompt.trim()) return;
+    setIsGenerating(true);
+    try {
+      const res = await fetch("api/listing/generate-description", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: aiPrompt }),
+      });
+      const data = await res.json();
+      if (data.description) {
+        setFormData({ ...formData, description: data.description });
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleImageSubmit = (e) => {
     if (files.length > 0 && files.length + formData.imageUrls.length < 7) {
@@ -374,6 +397,87 @@ export default function CreateListing() {
           {error && <p className="text-red-700">{error}</p>}
         </div>
       </form>
+
+      <button
+        onClick={() => setIsChatbotOpen(!isChatbotOpen)}
+        className={`fixed bottom-6 right-6 p-4 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 z-50 ${
+          isChatbotOpen
+            ? "bg-red-700 hover:bg-red-800"
+            : "bg-slate-700 hover:bg-slate-800"
+        } text-white`}
+      >
+        {isChatbotOpen ? "✕" : "AI Helper"}
+      </button>
+
+      {isChatbotOpen && (
+        <div className="fixed bottom-20 right-6 w-96 max-w-full bg-white border border-gray-300 rounded-xl shadow-2xl overflow-hidden transform transition-all duration-300 ease-in-out animate-slide-in z-40 sm:w-80">
+          <div className="bg-slate-700 text-white p-4 font-semibold flex justify-between items-center">
+            <span>Listing Description Assistant</span>
+            <button
+              onClick={() => setIsChatbotOpen(false)}
+              className="text-white hover:text-gray-200 transition duration-200"
+            >
+              ✕
+            </button>
+          </div>
+          <div className="p-6">
+            <textarea
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              placeholder="Describe key features (e.g., '3BHK, ocean view, modern kitchen')"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition duration-200 resize-none h-24"
+            />
+            <button
+              onClick={generateDescription}
+              disabled={isGenerating}
+              className="w-full bg-blue-600 text-white py-2.5 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition duration-200 mt-4 font-medium"
+            >
+              {isGenerating ? (
+                <span className="flex items-center justify-center">
+                  <svg
+                    className="animate-spin h-5 w-5 mr-2 text-white"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                    />
+                  </svg>
+                  Generating...
+                </span>
+              ) : (
+                "Generate Description"
+              )}
+            </button>
+          </div>
+          {formData.description && (
+            <div className="p-6 border-t border-gray-300">
+              <p className="text-sm text-gray-500 mb-2 font-medium">Preview:</p>
+              <div className="bg-gray-50 p-3 rounded-lg text-sm text-gray-800">
+                {formData.description}
+              </div>
+              <button
+                onClick={() => {
+                  setFormData({ ...formData, description: "" });
+                  setAiPrompt("");
+                }}
+                className="text-red-700 text-xs mt-3 hover:text-red-800 transition duration-200 font-medium"
+              >
+                Clear Description
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </main>
   );
 }
